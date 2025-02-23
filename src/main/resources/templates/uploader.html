@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 350px;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        .file-label {
+            display: block;
+            padding: 15px;
+            border: 2px dashed #007bff;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #f8f9fa;
+            color: #007bff;
+            transition: 0.3s;
+        }
+        .file-label:hover {
+            background: #e9ecef;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border: none;
+            background: #007bff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #statusMessage {
+            margin-top: 10px;
+            font-size: 14px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Upload Your File</h2>
+    <form id="uploadForm">
+        <label for="fileInput" class="file-label" id="dropArea">
+            <span id="fileName">Choose a file or Drag & Drop</span>
+            <input type="file" id="fileInput" name="file" accept="*/*" required>
+        </label>
+        <button type="submit">Upload</button>
+    </form>
+    <p id="statusMessage"></p>
+</div>
+
+<script>
+    const fileInput = document.getElementById("fileInput");
+    const dropArea = document.getElementById("dropArea");
+    const fileNameDisplay = document.getElementById("fileName");
+    const statusMessage = document.getElementById("statusMessage");
+
+    // Update file name display when a file is selected
+    fileInput.addEventListener("change", function () {
+        fileNameDisplay.innerText = this.files.length > 0 ? this.files[0].name : "Choose a file";
+    });
+
+    // Drag & Drop functionality
+    dropArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropArea.style.background = "#e9ecef";
+    });
+
+    dropArea.addEventListener("dragleave", () => {
+        dropArea.style.background = "#f8f9fa";
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropArea.style.background = "#f8f9fa";
+        let file = e.dataTransfer.files[0];
+        fileInput.files = e.dataTransfer.files;
+        fileNameDisplay.innerText = file.name;
+    });
+
+    // Handle file upload
+    document.getElementById("uploadForm").addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        let file = fileInput.files[0];
+        if (!file) {
+            alert("Please select a file first!");
+            return;
+        }
+
+        let formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            let response = await fetch("/upload-file", {
+                method: "POST",
+                body: formData
+            });
+
+            if (response.ok) {
+                statusMessage.style.color = "green";
+                statusMessage.innerText = "File uploaded successfully!";
+            } else {
+                throw new Error("Upload failed");
+            }
+        } catch (error) {
+            statusMessage.style.color = "red";
+            statusMessage.innerText = "Error uploading file.";
+        }
+    });
+</script>
+
+</body>
+</html>
