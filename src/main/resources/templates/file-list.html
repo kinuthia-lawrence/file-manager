@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        table {
+            width: 80%;
+            margin: auto;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+            text-transform: uppercase;
+        }
+        tr {
+            transition: background 0.3s;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+        .download-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        .download-btn:hover {
+            background-color: #218838;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        .container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Available Files</h2>
+<div class="container">
+    <table>
+        <thead>
+        <tr>
+            <th>Filename</th>
+            <th>Size (KB)</th>
+            <th>Download</th>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="file : ${files}" th:id="'fileRow-' + ${file.name}">
+            <td th:text="${file.name}"></td>
+            <td th:text="${file.size / 1024}"></td>
+            <td>
+                <button class="action-btn download-btn" th:onclick="downloadFile([[${file.name}]])">Download</button>
+            </td>
+            <td>
+                <button class="action-btn delete-btn" th:onclick="deleteFile([[${file.name}]])">Delete</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function downloadFile(filename) {
+        window.location.href = '/download-faster?filename=' + encodeURIComponent(filename);
+    }
+
+    function deleteFile(filename) {
+        if (confirm("Are you sure you want to delete " + filename + "?")) {
+            fetch('/delete-file?filename=' + encodeURIComponent(filename), {
+                method: 'DELETE'
+            }).then(response => {
+                if (response.ok) {
+                    document.getElementById("fileRow-" + filename).remove();
+                } else {
+                    alert("Failed to delete file.");
+                }
+            }).catch(error => console.error('Error:', error));
+        }
+    }
+</script>
+
+</body>
+</html>
